@@ -19,10 +19,10 @@ func Of(v T) *Optional {
 	if v != nil {
 		return &Optional{v: v, set: true}
 	}
-	panic("optional.Of takes a non-null value. Use OfNullable for potentially null values.")
+	panic("optional.Of takes a non-nil value. Use OfNilable for potentially nil values.")
 }
 
-func OfNullable(v T) *Optional {
+func OfNilable(v T) *Optional {
 	if v != nil {
 		return &Optional{v: v, set: true}
 	}

@@ -5,32 +5,71 @@ import (
 	"testing"
 )
 
-func Test_OptionalOf(t *testing.T) {
-	t.Run("Testing Of", OfTest)
-	t.Run("Testing nil Of", OfNilTest)
+func shouldPanic(func_name string, t *testing.T) {
+	if r := recover(); r == nil {
+		t.Fatal(func_name + " should panic and did not.")
+	}
 }
 
-func OfTest(t *testing.T) {
-	defer func() {
-		if r := recover(); r != nil {
-			t.Error("optional.Of should not panic if value is not nil", r)
-		}
-	}()
+func shouldNotPanic(func_name string, t *testing.T) {
+	if r := recover(); r != nil {
+		t.Fatalf(func_name+" should not panic and did: %v", r)
+	}
+}
+
+func Test_OptionalOf(t *testing.T) {
+	t.Run("Testing Of", Of_test)
+	t.Run("Testing nil Of", OfNil_test)
+}
+
+func Of_test(t *testing.T) {
+	defer shouldNotPanic("optional.Of with non nil value", t)
 
 	test_val := "test"
-	of_op := op.Of(test_val)
-	if v, ok := of_op.Get().(string); !ok {
+
+	var o *op.Optional
+	o = op.Of(test_val)
+
+	if v, ok := o.Get().(string); !ok {
 		t.Error("Returned type should be string.")
 	} else if v != test_val {
 		t.Errorf("Expected `%v`, got `%v`", test_val, v)
 	}
 }
-func OfNilTest(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Error("optional.Of should panic if nil is passed")
-		}
-	}()
 
-	op.Of(nil)
+func OfNil_test(t *testing.T) {
+	defer shouldPanic("optional.Of with nil value", t)
+
+	var _ *op.Optional = op.Of(nil)
+	t.Fatal("this code should not be reachable.")
+}
+
+func Test_OptionalOfNilable(t *testing.T) {
+	t.Run("Testing OfNilable", OfNullable_test)
+	t.Run("Testing nil OfNilable", OfNullableNil_test)
+}
+
+func OfNilable_test(t *testing.T) {
+	defer shouldNotPanic("optional.OfNilable", t)
+	test_val := "test"
+
+	var o *op.Optional
+	o = op.OfNilable(test_val)
+
+	if v, ok := o.Get().(string); !ok {
+		t.Error("Returned type should be string.")
+	} else if v != test_val {
+		t.Errorf("Expected `%v`, got `%v`", test_val, v)
+	}
+}
+
+func OfNilableNil_test(t *testing.T) {
+	defer shouldNotPanic("optional.OfNilable", t)
+
+	var o *op.Optional
+	o = op.OfNilable(nil)
+
+	if o.Get() != nil {
+		t.Error("Returned type should be nil but is not.")
+	}
 }
