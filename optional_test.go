@@ -215,8 +215,8 @@ func Or_test(t *testing.T) {
 	defer shouldNotPanic("optional.Or", t)
 
 	var o *op.Optional
-	o = op.OfNilable(TEST_INT).Or(func(ts op.Ts) *op.Optional {
-		return op.Of(TEST_STR)
+	o = op.OfNilable(TEST_INT).Or(func(ts op.Ts) op.T {
+		return TEST_STR
 	})
 
 	if v := o.Get().(int); v != TEST_INT {
@@ -228,8 +228,8 @@ func OrOther_test(t *testing.T) {
 	defer shouldNotPanic("optional.Or", t)
 
 	var o *op.Optional
-	o = op.OfNilable(nil).Or(func(ts op.Ts) *op.Optional {
-		return op.Of(TEST_STR)
+	o = op.OfNilable(nil).Or(func(ts op.Ts) op.T {
+		return TEST_STR
 	})
 
 	if v := o.Get().(string); v != TEST_STR {
@@ -240,8 +240,8 @@ func OrOther_test(t *testing.T) {
 func OrOtherSingleParam_test(t *testing.T) {
 
 	var o *op.Optional
-	o = op.OfNilable(nil).Or(func(ts op.Ts) *op.Optional {
-		return op.Of(ts[0].(string))
+	o = op.OfNilable(nil).Or(func(ts op.Ts) op.T {
+		return ts[0].(string)
 	}, TEST_STR)
 
 	if v := o.Get().(string); v != TEST_STR {
@@ -252,8 +252,8 @@ func OrOtherSingleParam_test(t *testing.T) {
 func OrOtherMultipleParams_test(t *testing.T) {
 
 	var o *op.Optional
-	o = op.OfNilable(nil).Or(func(ts op.Ts) *op.Optional {
-		return op.Of(ts[0].(int) + ts[1].(int))
+	o = op.OfNilable(nil).Or(func(ts op.Ts) op.T {
+		return ts[0].(int) + ts[1].(int)
 	}, TEST_INT, TEST_OTHER)
 
 	expected := TEST_INT + TEST_OTHER
@@ -432,12 +432,11 @@ func Test_FlatMap(t *testing.T) {
 func FlatMap_test(t *testing.T) {
 	defer shouldNotPanic("optional.FlatMap", t)
 
-	var o *op.Optional
-	o = op.Of(TEST_INT).FlatMap(func(v op.T) *op.Optional {
-		return op.Of(v)
+	r := op.Of(TEST_INT).FlatMap(func(v op.T) op.T {
+		return v
 	})
 
-	if v, ok := o.Get().(int); !ok {
+	if v, ok := r.(int); !ok {
 		t.Error("Returned type should be int.")
 	} else if v != TEST_INT {
 		t.Errorf("Expected `%v`, got `%v`", TEST_INT, v)
@@ -447,18 +446,17 @@ func FlatMap_test(t *testing.T) {
 func FlatMapChain_test(t *testing.T) {
 	defer shouldNotPanic("optional.FlatMap", t)
 
-	var o *op.Optional
-	o = op.Of(TEST_INT).FlatMap(func(v op.T) *op.Optional {
+	r := op.Of(TEST_INT).FlatMap(func(v op.T) op.T {
 		return op.Of(strconv.Itoa(v.(int)))
-	}).FlatMap(func(v op.T) *op.Optional {
+	}).(*op.Optional).FlatMap(func(v op.T) op.T {
 		val, err := strconv.Atoi(v.(string))
 		if err != nil {
 			t.Fatalf("Could not map value from string to int.")
 		}
-		return op.Of(val)
+		return val
 	})
 
-	if v, ok := o.Get().(int); !ok {
+	if v, ok := r.(int); !ok {
 		t.Error("Returned type should be int.")
 	} else if v != TEST_INT {
 		t.Errorf("Expected `%v`, got `%v`", TEST_INT, v)
@@ -468,12 +466,11 @@ func FlatMapChain_test(t *testing.T) {
 func FlatMapReturnsNil_test(t *testing.T) {
 	defer shouldNotPanic("optional.FlatMap", t)
 
-	var o *op.Optional
-	o = op.Of(TEST_STR).FlatMap(func(v op.T) *op.Optional {
+	r := op.Of(TEST_STR).FlatMap(func(v op.T) op.T {
 		return nil
-	})
+	}).(*op.Optional)
 
-	if o.Get() != nil {
+	if r.Get() != nil {
 		t.Error("Optional should be empty.")
 	}
 }
@@ -482,10 +479,10 @@ func FlatMapEmptyOptional_test(t *testing.T) {
 	defer shouldNotPanic("optional.FlatMap", t)
 
 	var o *op.Optional
-	o = op.OfNilable(nil).FlatMap(func(v op.T) *op.Optional {
+	o = op.OfNilable(nil).FlatMap(func(v op.T) op.T {
 		t.Fatal("FlatMap on empty optional should not run")
 		return nil
-	})
+	}).(*op.Optional)
 
 	if o.Get() != nil {
 		t.Error("Optional should be empty.")
@@ -569,7 +566,7 @@ func Test_OrElseGet(t *testing.T) {
 	t.Run("OrElseGet Different Types", OrElseGetDifOther_test)
 }
 
-func OtherFunc() op.T {
+func OtherFunc(ts op.Ts) op.T {
 	return TEST_OTHER
 }
 
@@ -605,7 +602,7 @@ func OrElseGetNilOther_test(t *testing.T) {
 	var o *op.Optional
 	o = op.OfNilable(nil)
 
-	if o.OrElseGet(func() op.T { return nil }) != nil {
+	if o.OrElseGet(func(ts op.Ts) op.T { return nil }) != nil {
 		t.Error("Returned type should be nil.")
 	}
 }

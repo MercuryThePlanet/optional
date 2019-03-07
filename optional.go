@@ -12,17 +12,18 @@ type Interface interface {
 	Cmpr(T) int
 }
 
-type FlatMapFunc = func(T) *Optional
-type FilterFunc = func(T) bool
-type MapFunc = func(T) T
-type GetFunc = func() T
-type Supplier = func(Ts) *Optional
+type Predicate = func(T) bool
+type Supplier = func(Ts) T
+type Mapper = func(T) T
+type Consumer = func(T)
+type Runnable = func()
 
 func (o *Optional) Or(f Supplier, ts ...T) *Optional {
 	if o.present {
 		return o
 	} else {
-		return f(ts)
+		t := f(ts)
+		return o.set(t, t != nil)
 	}
 }
 
@@ -41,7 +42,7 @@ func (o *Optional) Equals(t T) bool {
 	return false
 }
 
-func (o *Optional) Filter(f FilterFunc) *Optional {
+func (o *Optional) Filter(f Predicate) *Optional {
 	if f(o.t) {
 		return o
 	} else {
@@ -60,7 +61,7 @@ func OfNilable(t T) *Optional {
 	return &Optional{t: t, present: t != nil}
 }
 
-func (o *Optional) set(t interface{}, present bool) *Optional {
+func (o *Optional) set(t T, present bool) *Optional {
 	o.t = t
 	o.present = present
 	return o
@@ -73,13 +74,13 @@ func (o *Optional) Get() T {
 	return nil
 }
 
-func (o *Optional) IfPresent(f func(t T)) {
+func (o *Optional) IfPresent(f Consumer) {
 	if o.present {
 		f(o.t)
 	}
 }
 
-func (o *Optional) IfPresentOrElse(f func(t T), other func()) {
+func (o *Optional) IfPresentOrElse(f Consumer, other Runnable) {
 	if o.present {
 		f(o.t)
 	} else {
@@ -91,19 +92,19 @@ func (o *Optional) IsPresent() bool {
 	return o.present
 }
 
-func (o *Optional) Map(f MapFunc) *Optional {
+func (o *Optional) Map(f Mapper) *Optional {
 	if o.present {
-		new_t := f(o.t)
-		return o.set(new_t, new_t != nil)
+		mapped_t := f(o.t)
+		return o.set(mapped_t, mapped_t != nil)
 	}
 	return o.set(nil, false)
 }
 
-func (o *Optional) FlatMap(f FlatMapFunc) *Optional {
+func (o *Optional) FlatMap(f Mapper) T {
 	if o.present {
-		new_t := f(o.t)
-		if new_t != nil {
-			return new_t
+		mapped_t := f(o.t)
+		if mapped_t != nil {
+			return mapped_t
 		}
 	}
 	return o.set(nil, false)
@@ -117,11 +118,11 @@ func (o *Optional) OrElse(other T) T {
 	}
 }
 
-func (o *Optional) OrElseGet(f GetFunc) T {
+func (o *Optional) OrElseGet(f Supplier, ts ...T) T {
 	if o.present {
 		return o.t
 	} else {
-		return f()
+		return f(ts)
 	}
 }
 
