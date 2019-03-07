@@ -12,8 +12,21 @@ type Interface interface {
 }
 
 type FlatMapFunc = func(T) *Optional
+type FilterFunc = func(T) bool
 type MapFunc = func(T) T
 type GetFunc = func() T
+
+func Empty() *Optional {
+	return &Optional{}
+}
+
+func (o *Optional) Filter(f FilterFunc) *Optional {
+	if f(o.v) {
+		return o
+	} else {
+		return o.set(nil, false)
+	}
+}
 
 func Of(v T) *Optional {
 	if v != nil {

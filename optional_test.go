@@ -25,6 +25,51 @@ func shouldNotPanic(func_name string, t *testing.T) {
 	}
 }
 
+func Test_Empty(t *testing.T) {
+	t.Run("Empty", Empty_test)
+}
+
+func Empty_test(t *testing.T) {
+	defer shouldNotPanic("optional.Empty", t)
+
+	if op.Empty().IsPresent() {
+		t.Error("Empty optional should have no value")
+	}
+}
+
+func Test_Filter(t *testing.T) {
+	t.Run("Filter", Filter_test)
+	t.Run("Filter remove", FilterRemove_test)
+}
+
+func Filter_test(t *testing.T) {
+	defer shouldNotPanic("optional.Filter", t)
+
+	var o *op.Optional
+	o = op.OfNilable(TEST_STR).Filter(func(v op.T) bool {
+		_, ok := v.(string)
+		return ok
+	})
+	if !o.IsPresent() {
+		t.Error("Value should be present.")
+	} else if v := o.Get().(string); v != TEST_STR {
+		t.Errorf("Expected `%v`, got `%v`", TEST_STR, v)
+	}
+}
+
+func FilterRemove_test(t *testing.T) {
+	defer shouldNotPanic("optional.Filter", t)
+
+	var o *op.Optional
+	o = op.OfNilable(TEST_STR).Filter(func(v op.T) bool {
+		_, ok := v.(int)
+		return ok
+	})
+	if o.IsPresent() {
+		t.Error("Value should not be present.")
+	}
+}
+
 func Test_Of(t *testing.T) {
 	t.Run("Of", Of_test)
 	t.Run("nil Of", OfNil_test)
