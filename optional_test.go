@@ -106,3 +106,30 @@ func IfNotPresent_test(t *testing.T) {
 		t.Error("IfPresent was reached when it should not have been.")
 	})
 }
+
+func Test_IsPresent(t *testing.T) {
+	t.Run("Testing IsPresent", IsPresent_test)
+	t.Run("Testing nil IsPresent not present", IsNotPresent_test)
+}
+
+func IsPresent_test(t *testing.T) {
+	defer shouldNotPanic("optional.IsPresent", t)
+
+	var o *op.Optional
+	o = op.Of(TEST_STR)
+
+	if !o.IsPresent() {
+		t.Error("IsPresent was false when it should have true.")
+	}
+}
+
+func IsNotPresent_test(t *testing.T) {
+	defer shouldNotPanic("optional.IsPresent", t)
+
+	var o *op.Optional
+	o = op.OfNilable(nil)
+
+	if o.IsPresent() {
+		t.Error("IsPresent was true when it should have false.")
+	}
+}
