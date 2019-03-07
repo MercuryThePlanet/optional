@@ -2,4 +2,6 @@
 [![Coverage](./coverage_badge.png)](./coverage_badge.png)
 
 # optional
-Implementation of optional in golang
+package optional contains functions for creating an optional container.
+
+An optional container may or may not contain a nil value. Optional methods allow you to write code without checking if a value is nil or not. If the value is nil the code will not be executed and enter a panic.
