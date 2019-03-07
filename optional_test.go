@@ -13,6 +13,22 @@ const (
 	TEST_PANIC = "panicking"
 )
 
+type S struct{ v int }
+
+func (s *S) Cmpr(t op.T) int {
+	o, ok := t.(*S)
+	if !ok {
+		return -2
+	}
+	if s.v > o.v {
+		return 1
+	} else if s.v < o.v {
+		return -1
+	} else {
+		return 0
+	}
+}
+
 func shouldPanic(func_name string, t *testing.T) {
 	if r := recover(); r == nil {
 		t.Fatal(func_name + " should panic and did not.")
@@ -34,6 +50,70 @@ func Empty_test(t *testing.T) {
 
 	if op.Empty().IsPresent() {
 		t.Error("Empty optional should have no value")
+	}
+}
+
+func Test_Equals(t *testing.T) {
+	t.Run("Equals", Equals_test)
+	t.Run("Equals not equal", EqualsNot_test)
+	t.Run("Equals Cmpr not implemented", EqualsNoCmpr_test)
+	t.Run("Equals other not Optional", EqualsNotOptional_test)
+	t.Run("Equals value not present", EqualsNotPresent_test)
+	t.Run("Equals other value not present", EqualsOtherNotPresent_test)
+}
+
+func Equals_test(t *testing.T) {
+	defer shouldNotPanic("optional.Equals", t)
+
+	o := op.Of(&S{})
+	other := op.Of(&S{})
+	if !o.Equals(other) {
+		t.Error("The values passed should be equal.")
+	}
+}
+
+func EqualsNot_test(t *testing.T) {
+	defer shouldNotPanic("optional.Equals", t)
+
+	o := op.Of(&S{1})
+	other := op.Of(&S{-1})
+	if o.Equals(other) {
+		t.Error("The values passed should not be equal.")
+	}
+}
+
+func EqualsNoCmpr_test(t *testing.T) {
+	defer shouldNotPanic("optional.Equals", t)
+
+	o := op.Of(struct{}{})
+	other := op.Of(&S{-1})
+	if o.Equals(other) {
+		t.Error("The values passed should not be equal.")
+	}
+}
+
+func EqualsNotOptional_test(t *testing.T) {
+	defer shouldNotPanic("optional.Equals", t)
+
+	o := op.Of(&S{})
+	if o.Equals(&S{}) {
+		t.Error("The values passed should not be equal.")
+	}
+}
+
+func EqualsNotPresent_test(t *testing.T) {
+	defer shouldNotPanic("optional.Equals", t)
+
+	if op.Empty().Equals(&S{}) {
+		t.Error("The values passed should not be equal.")
+	}
+}
+
+func EqualsOtherNotPresent_test(t *testing.T) {
+	defer shouldNotPanic("optional.Equals", t)
+
+	if op.Of(&S{}).Equals(op.Empty()) {
+		t.Error("The values passed should not be equal.")
 	}
 }
 
@@ -121,6 +201,64 @@ func OfNilableNil_test(t *testing.T) {
 
 	if o.Get() != nil {
 		t.Error("Returned type should be nil but is not.")
+	}
+}
+
+func Test_Or(t *testing.T) {
+	t.Run("Or", Or_test)
+	t.Run("Or Other", OrOther_test)
+	t.Run("Pass supplier single param", OrOtherSingleParam_test)
+	t.Run("Pass supplier multiple params", OrOtherMultipleParams_test)
+}
+
+func Or_test(t *testing.T) {
+	defer shouldNotPanic("optional.Or", t)
+
+	var o *op.Optional
+	o = op.OfNilable(TEST_INT).Or(func(ts op.Ts) *op.Optional {
+		return op.Of(TEST_STR)
+	})
+
+	if v := o.Get().(int); v != TEST_INT {
+		t.Errorf("Expected `%v`, got `%v`", TEST_INT, v)
+	}
+}
+
+func OrOther_test(t *testing.T) {
+	defer shouldNotPanic("optional.Or", t)
+
+	var o *op.Optional
+	o = op.OfNilable(nil).Or(func(ts op.Ts) *op.Optional {
+		return op.Of(TEST_STR)
+	})
+
+	if v := o.Get().(string); v != TEST_STR {
+		t.Errorf("Expected `%v`, got `%v`", TEST_STR, v)
+	}
+}
+
+func OrOtherSingleParam_test(t *testing.T) {
+
+	var o *op.Optional
+	o = op.OfNilable(nil).Or(func(ts op.Ts) *op.Optional {
+		return op.Of(ts[0].(string))
+	}, TEST_STR)
+
+	if v := o.Get().(string); v != TEST_STR {
+		t.Errorf("Expected `%v`, got `%v`", TEST_STR, v)
+	}
+}
+
+func OrOtherMultipleParams_test(t *testing.T) {
+
+	var o *op.Optional
+	o = op.OfNilable(nil).Or(func(ts op.Ts) *op.Optional {
+		return op.Of(ts[0].(int) + ts[1].(int))
+	}, TEST_INT, TEST_OTHER)
+
+	expected := TEST_INT + TEST_OTHER
+	if v := o.Get().(int); v != expected {
+		t.Errorf("Expected `%v`, got `%v`", expected, v)
 	}
 }
 
