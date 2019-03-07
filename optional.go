@@ -97,6 +97,13 @@ func OfNilable(t T) *Optional {
 	return &Optional{t: t, present: t != nil}
 }
 
+func OfErrorable(t T, err error) *Optional {
+	if err == nil {
+		return &Optional{t: t, present: t != nil}
+	}
+	return &Optional{}
+}
+
 // If a value is present, returns an Optional describing the value, otherwise
 // returns an Optional produced by the supplying function.
 func (o *Optional) Or(f Supplier, ts ...T) *Optional {

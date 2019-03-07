@@ -1,6 +1,7 @@
 package optional_test
 
 import (
+	"errors"
 	op "github.com/MercuryThePlanet/optional"
 	"strconv"
 	"testing"
@@ -200,6 +201,39 @@ func OfNilableNil_test(t *testing.T) {
 	o = op.OfNilable(nil)
 
 	if o.Get() != nil {
+		t.Error("Returned type should be nil but is not.")
+	}
+}
+
+func Test_OfErrorable(t *testing.T) {
+	t.Run("OfErrorable", OfErrorable_test)
+	t.Run("OfErrorable has error", OfErrorableErr_test)
+}
+
+func OfErrorable_test(t *testing.T) {
+	defer shouldNotPanic("optional.OfErrorable", t)
+
+	var o *op.Optional
+	o = op.OfErrorable(func() (string, error) {
+		return TEST_STR, nil
+	}())
+
+	if v, ok := o.Get().(string); !ok {
+		t.Error("Returned type should be string.")
+	} else if v != TEST_STR {
+		t.Errorf("Expected `%v`, got `%v`", TEST_STR, v)
+	}
+}
+
+func OfErrorableErr_test(t *testing.T) {
+	defer shouldNotPanic("optional.OfErrorable", t)
+
+	var o *op.Optional
+	o = op.OfErrorable(func() (string, error) {
+		return TEST_STR, errors.New("Test")
+	}())
+
+	if o.IsPresent() {
 		t.Error("Returned type should be nil but is not.")
 	}
 }
