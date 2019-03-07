@@ -1,8 +1,8 @@
 // package optional contains functions for creating an optional container.
 //
-// An optional container may or may not be nil. Optional methods allow you to
-// write code without checking if a value is nil or not. If the value is nil
-// the code will not be executed and enter a panic.
+// An optional container may or may not contain a nil value. Optional methods
+// allow you to write code without checking if a value is nil or not. If the
+// value is nil the code will not be executed and enter a panic.
 package optional
 
 type T = interface{}
