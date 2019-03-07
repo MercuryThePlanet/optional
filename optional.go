@@ -58,9 +58,9 @@ func (o *Optional) set(t T, present bool) *Optional {
 // Indicates if another object is equal to this Optional.
 //
 // Two objects are considered equal if:
-//  - They are both optionals.
-//  - They are both empty optionals or;
-//  - The contained values return zero after running the Cmpr method.
+// - They are both optionals.
+// - They are both empty optionals or;
+// - The contained values return zero after running the Cmpr method.
 func (o *Optional) Equals(t T) bool {
 	if o.IsPresent() {
 		i, isInterface := o.t.(Interface)
