@@ -156,6 +156,35 @@ func IfNotPresent_test(t *testing.T) {
 	})
 }
 
+func Test_IfPresentOrElse(t *testing.T) {
+	t.Run("IfPresentOrElse", IfPresentOrElse_test)
+	t.Run("IfPresentOrElse not present", IfPresentOrElseOther_test)
+}
+
+func IfPresentOrElse_test(t *testing.T) {
+	defer shouldNotPanic("optional.IfPresentOrElse", t)
+
+	var o *op.Optional
+	o = op.Of(TEST_STR)
+
+	o.IfPresentOrElse(func(v op.T) {
+	}, func() {
+		t.Error("IfPresentOrElse other was reached when it should not have been.")
+	})
+}
+
+func IfPresentOrElseOther_test(t *testing.T) {
+	defer shouldNotPanic("optional.IfPresentOrElse", t)
+
+	var o *op.Optional
+	o = op.OfNilable(nil)
+
+	o.IfPresentOrElse(func(v op.T) {
+		t.Error("IfPresentOrElse first was reached when it should not have been.")
+	}, func() {
+	})
+}
+
 func Test_IsPresent(t *testing.T) {
 	t.Run("IsPresent", IsPresent_test)
 	t.Run("IsPresent not present", IsNotPresent_test)

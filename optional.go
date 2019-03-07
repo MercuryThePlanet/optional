@@ -58,6 +58,14 @@ func (o *Optional) IfPresent(f func(v T)) {
 	}
 }
 
+func (o *Optional) IfPresentOrElse(f func(v T), other func()) {
+	if o.present {
+		f(o.v)
+	} else {
+		other()
+	}
+}
+
 func (o *Optional) IsPresent() bool {
 	return o.present
 }
