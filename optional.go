@@ -97,6 +97,8 @@ func OfNilable(t T) *Optional {
 	return &Optional{t: t, present: t != nil}
 }
 
+// If the error is nil, returns an Optional describing the given value, otherwise
+// returns an empty Optional.
 func OfErrorable(t T, err error) *Optional {
 	if err == nil {
 		return &Optional{t: t, present: t != nil}
