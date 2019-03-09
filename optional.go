@@ -5,12 +5,6 @@
 // value is nil the code will not be executed and enter a panic.
 package optional
 
-// Alias of empty interface for ease of use
-type T = interface{}
-
-// Alias of slice of empty interface for ease of use
-type Ts = []T
-
 // struct Optional is the container struct.
 type Optional struct {
 	t       T
@@ -25,24 +19,32 @@ type Interface interface {
 	Cmpr(T) int
 }
 
-// A Predicate function signature.
-//
-// Takes an empty interface, runs some logic and returns a bool.
-type Predicate = func(T) bool
+type (
+	// Alias of empty interface for ease of use
+	T interface{}
 
-// A Supplier function signature.
-//
-// A variadic function that returns an empty interface.
-type Supplier = func(Ts) T
+	// Alias of slice of empty interface for ease of use
+	Ts []T
 
-// A Mapper function signature.
-type Mapper = func(T) T
+	// A Predicate function signature.
+	//
+	// Takes an empty interface, runs some logic and returns a bool.
+	Predicate func(T) bool
 
-// A Consumer function signature.
-type Consumer = func(T)
+	// A Supplier function signature.
+	//
+	// A variadic function that returns an empty interface.
+	Supplier func(Ts) T
 
-// A Runnable function signature.
-type Runnable = func()
+	// A Mapper function signature.
+	Mapper func(T) T
+
+	// A Consumer function signature.
+	Consumer func(T)
+
+	// A Runnable function signature.
+	Runnable func()
+)
 
 // Returns an empty Optional instance.
 func Empty() *Optional {
