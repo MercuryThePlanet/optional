@@ -19,13 +19,13 @@ type Interface interface {
 	Cmpr(T) int
 }
 
+// Alias of empty interface for ease of use
+type T = interface{}
+
+// Alias of slice of empty interface for ease of use
+type Ts = []T
+
 type (
-	// Alias of empty interface for ease of use
-	T interface{}
-
-	// Alias of slice of empty interface for ease of use
-	Ts []T
-
 	// A Predicate function signature.
 	//
 	// Takes an empty interface, runs some logic and returns a bool.
